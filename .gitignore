@@ -1,2 +1,3 @@
 node_modules/
 appState.json
+*.code-workspace
