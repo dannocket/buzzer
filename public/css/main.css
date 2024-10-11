@@ -1,0 +1,217 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-size: 16px;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+    Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  margin: 0;
+  background-color: #f0f0f0;
+}
+
+/* Main */
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+#result {
+  font-size: 48px;
+  text-align: center;
+}
+#historyIcon {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 24px;
+  cursor: pointer;
+}
+#pressesList {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 300px;
+  max-height: 80vh;
+  overflow-y: auto;
+  background-color: white;
+  border-radius: 10px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  display: none;
+}
+.pressItem {
+  padding: 10px;
+  border-bottom: 1px solid #f0f0f0;
+  display: flex;
+  justify-content: space-between;
+}
+.timestamp {
+  font-family: monospace;
+}
+
+/* User */
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  touch-action: none;
+  user-select: none;
+}
+input,
+button {
+  font-size: 1rem;
+  padding: 3px;
+}
+button {
+  padding: 3px 10px;
+}
+#registrationForm,
+#buzzerContainer {
+  display: none;
+  text-align: center;
+  margin-bottom: 50px;
+}
+#teamNameContainer {
+  margin-bottom: 20px;
+  font-size: 24px;
+}
+#teamDescriptionContainer {
+  margin-bottom: 20px;
+  font-size: 16px;
+  color: #999;
+  display: none;
+}
+#changeRegistration {
+  cursor: pointer;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+}
+#team-name-input {
+  font-size: 16px;
+  padding: 3px;
+}
+#register-button {
+  font-size: 16px;
+  padding: 3px 10px;
+}
+#buzzerButton {
+  width: 80vw;
+  height: 80vw;
+  max-width: 300px;
+  max-height: 300px;
+  background-color: #ff4136;
+  border: none;
+  border-radius: 20px;
+  font-size: 24px;
+  color: white;
+  cursor: pointer;
+  transition: transform 0.1s;
+  touch-action: manipulation;
+  touch-action: none;
+  user-select: none;
+}
+#buzzerButton:active:not(:disabled) {
+  transform: scale(0.95);
+}
+#buzzerButton:disabled {
+  pointer-events: none;
+  background-color: #cccccc;
+  cursor: not-allowed;
+  transition: none;
+}
+@media (orientation: landscape) {
+  body {
+    flex-direction: row;
+  }
+  #teamNameContainer {
+    padding-right: 20px;
+  }
+  #buzzerButton {
+    width: 40vw;
+    height: 40vw;
+  }
+}
+
+/* Admin */
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+}
+input,
+button {
+  font-size: 1rem;
+  padding: 3px;
+}
+button {
+  padding: 3px 10px;
+}
+
+#loginForm {
+  width: 300px;
+  text-align: center;
+}
+#adminPanel {
+  width: 500px;
+  text-align: center;
+}
+#adminPanel {
+  display: none;
+}
+#usersList,
+#resetSection {
+  margin-top: 20px;
+  width: 100%;
+}
+.userItem {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.userItem > span {
+  padding: 3px 10px 3px 0;
+}
+.pendingNameChange {
+  color: orange;
+}
+.tabs {
+  display: flex;
+  justify-content: space-around;
+  margin-bottom: 20px;
+}
+.tab {
+  cursor: pointer;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-bottom: none;
+  background-color: #f9f9f9;
+  width: 100%;
+}
+.active-tab {
+  background-color: #fff;
+  font-weight: bold;
+}
+.tab-content {
+  display: none;
+}
+.active-content {
+  display: block;
+}
+.teamDescription {
+  margin-left: 10px;
+  color: #999;
+}

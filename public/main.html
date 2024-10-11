@@ -4,50 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Buzzer - Main Screen</title>
-    <style>
-      body {
-        font-family: Arial, sans-serif;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100vh;
-        margin: 0;
-        background-color: #f0f0f0;
-      }
-      #result {
-        font-size: 48px;
-        text-align: center;
-      }
-      #historyIcon {
-        position: absolute;
-        top: 20px;
-        right: 20px;
-        font-size: 24px;
-        cursor: pointer;
-      }
-      #pressesList {
-        position: absolute;
-        top: 60px;
-        right: 20px;
-        width: 300px;
-        max-height: 80vh;
-        overflow-y: auto;
-        background-color: white;
-        border-radius: 10px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        display: none;
-      }
-      .pressItem {
-        padding: 10px;
-        border-bottom: 1px solid #f0f0f0;
-        display: flex;
-        justify-content: space-between;
-      }
-      .timestamp {
-        font-family: monospace;
-      }
-    </style>
+    <link rel="stylesheet" href="/css/main.css" />
   </head>
   <body>
     <div id="result">Waiting for buzzer press...</div>
