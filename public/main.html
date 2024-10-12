@@ -8,7 +8,7 @@
   </head>
   <body>
     <div id="result">Waiting for buzzer press...</div>
-    <div id="historyIcon">📜</div>
+    <div id="history-icon">📜</div>
     <div id="pressesList"></div>
 
     <script src="/socket.io/socket.io.js"></script>
@@ -20,7 +20,7 @@
       const socket = io();
       const resultElement = document.getElementById("result");
       const pressesListElement = document.getElementById("pressesList");
-      const historyIconElement = document.getElementById("historyIcon");
+      const historyIconElement = document.getElementById("history-icon");
       let buzzerSound = new Audio("buzzer.mp3");
       let subsequentBuzzerSound = new Audio("buzzer-2.mp3");
       let speechSynthesis = window.speechSynthesis;

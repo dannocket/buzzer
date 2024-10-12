@@ -21,7 +21,7 @@
         <span id="changeRegistration">✎</span>
       </div>
       <div id="teamDescriptionContainer"></div>
-      <button id="buzzerButton">BUZZ!</button>
+      <button id="buzzer-button">BUZZ!</button>
     </div>
     <script src="/socket.io/socket.io.js"></script>
     <script>
@@ -30,13 +30,13 @@
       let teamPin = "";
       let lastBuzzTime = 0;
       let reconnectionInterval;
-      const buzzerButton = document.getElementById("buzzerButton");
+      const buzzerButton = document.getElementById("buzzer-button");
 
       function registerTeam() {
-        teamName = document.getElementById("teamNameInput").value.trim();
+        teamName = document.getElementById("team-name-input").value.trim();
         if (teamName) {
-          document.getElementById("teamNameInput").disabled = true;
-          document.getElementById("registerButton").disabled = true;
+          document.getElementById("team-name-input").disabled = true;
+          document.getElementById("register-button").disabled = true;
           fetch("/register", {
             method: "POST",
             headers: {
@@ -55,8 +55,8 @@
                 localStorage.setItem("teamPin", teamPin);
               } else {
                 alert("Registration failed: " + data.error);
-                document.getElementById("teamNameInput").disabled = false; // Re-enable input
-                document.getElementById("registerButton").disabled = false; // Re-enable button
+                document.getElementById("team-name-input").disabled = false; // Re-enable input
+                document.getElementById("register-button").disabled = false; // Re-enable button
               }
             });
         }
@@ -92,10 +92,10 @@
       function showRegistrationForm(teamName = "") {
         document.getElementById("buzzerContainer").style.display = "none";
         document.getElementById("registrationForm").style.display = "block";
-        const teamNameInput = document.getElementById("teamNameInput");
+        const teamNameInput = document.getElementById("team-name-input");
         teamNameInput.value = teamName;
         teamNameInput.disabled = false;
-        document.getElementById("registerButton").disabled = false;
+        document.getElementById("register-button").disabled = false;
       }
       function reRegister() {
         teamName = localStorage.getItem("teamName");
@@ -139,7 +139,7 @@
         }
       }
       document
-        .getElementById("registerButton")
+        .getElementById("register-button")
         .addEventListener("click", registerTeam);
       buzzerButton.addEventListener("click", buzz);
       buzzerButton.addEventListener("touchstart", buzz);
