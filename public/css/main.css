@@ -6,212 +6,226 @@
 
 :root {
   font-size: 16px;
+
+  --color-primary: #ffffff;
+  --color-accent: #f24f13;
+  --color-heading: #f27f1b;
+  --color-background: #361e5c;
+  --color-disabled: #333333;
 }
 
 body {
+  background-color: var(--color-background);
+  color: var(--color-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   margin: 0;
-  background-color: #f0f0f0;
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-heading);
+  }
 }
 
 /* Main */
 
-body {
+body.page-main {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100vh;
-}
-#result {
-  font-size: 48px;
-  text-align: center;
-}
-#history-icon {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  font-size: 24px;
-  cursor: pointer;
-}
-#pressesList {
-  position: absolute;
-  top: 60px;
-  right: 20px;
-  width: 300px;
-  max-height: 80vh;
-  overflow-y: auto;
-  background-color: white;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  display: none;
-}
-.pressItem {
-  padding: 10px;
-  border-bottom: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-}
-.timestamp {
-  font-family: monospace;
-}
 
-/* User */
-
-body {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  touch-action: none;
-  user-select: none;
-}
-input,
-button {
-  font-size: 1rem;
-  padding: 3px;
-}
-button {
-  padding: 3px 10px;
-}
-#registrationForm,
-#buzzerContainer {
-  display: none;
-  text-align: center;
-  margin-bottom: 50px;
-}
-#teamNameContainer {
-  margin-bottom: 20px;
-  font-size: 24px;
-}
-#teamDescriptionContainer {
-  margin-bottom: 20px;
-  font-size: 16px;
-  color: #999;
-  display: none;
-}
-#changeRegistration {
-  cursor: pointer;
-  position: absolute;
-  top: 10px;
-  right: 10px;
-}
-#team-name-input {
-  font-size: 16px;
-  padding: 3px;
-}
-#register-button {
-  font-size: 16px;
-  padding: 3px 10px;
-}
-#buzzer-button {
-  width: 80vw;
-  height: 80vw;
-  max-width: 300px;
-  max-height: 300px;
-  background-color: #ff4136;
-  border: none;
-  border-radius: 20px;
-  font-size: 24px;
-  color: white;
-  cursor: pointer;
-  transition: transform 0.1s;
-  touch-action: manipulation;
-  touch-action: none;
-  user-select: none;
-}
-#buzzer-button:active:not(:disabled) {
-  transform: scale(0.95);
-}
-#buzzer-button:disabled {
-  pointer-events: none;
-  background-color: #cccccc;
-  cursor: not-allowed;
-  transition: none;
-}
-@media (orientation: landscape) {
-  body {
-    flex-direction: row;
+  #result {
+    font-size: 48px;
+    text-align: center;
   }
-  #teamNameContainer {
-    padding-right: 20px;
+  #history-icon {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 24px;
+    cursor: pointer;
   }
-  #buzzer-button {
-    width: 40vw;
-    height: 40vw;
+  #pressesList {
+    width: 300px;
+    max-height: 80vh;
+    overflow-y: auto;
+    background-color: var(--color-background);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
+  .pressItem {
+    padding: 10px;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    justify-content: space-between;
+  }
+  .timestamp {
+    font-family: monospace;
   }
 }
 
 /* Admin */
 
-body {
+body.page-admin {
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 20px;
-}
-input,
-button {
-  font-size: 1rem;
-  padding: 3px;
-}
-button {
-  padding: 3px 10px;
+
+  input,
+  button {
+    font-size: 1rem;
+    padding: 3px;
+  }
+  button {
+    padding: 3px 10px;
+  }
+
+  #loginForm {
+    width: 300px;
+    text-align: center;
+  }
+  #adminPanel {
+    width: 500px;
+    text-align: center;
+  }
+  #adminPanel {
+    display: none;
+  }
+  #usersList,
+  #resetSection {
+    margin-top: 20px;
+    width: 100%;
+  }
+  .userItem {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .userItem > span {
+    padding: 3px 10px 3px 0;
+  }
+  .pending-name-change {
+    color: orange;
+  }
+  .tabs {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 20px;
+  }
+  .tab {
+    cursor: pointer;
+    padding: 10px 20px;
+    border: 1px solid #ccc;
+    border-bottom: none;
+    background-color: #f9f9f9;
+    width: 100%;
+  }
+  .active-tab {
+    background-color: #fff;
+    font-weight: bold;
+  }
+  .active-content {
+    display: block;
+  }
+  .teamDescription {
+    margin-left: 10px;
+    color: #999;
+  }
 }
 
-#loginForm {
-  width: 300px;
-  text-align: center;
-}
-#adminPanel {
-  width: 500px;
-  text-align: center;
-}
-#adminPanel {
-  display: none;
-}
-#usersList,
-#resetSection {
-  margin-top: 20px;
-  width: 100%;
-}
-.userItem {
+/* User */
+
+body.page-user {
   display: flex;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.userItem > span {
-  padding: 3px 10px 3px 0;
-}
-.pending-name-change {
-  color: orange;
-}
-.tabs {
-  display: flex;
-  justify-content: space-around;
-  margin-bottom: 20px;
-}
-.tab {
-  cursor: pointer;
-  padding: 10px 20px;
-  border: 1px solid #ccc;
-  border-bottom: none;
-  background-color: #f9f9f9;
-  width: 100%;
-}
-.active-tab {
-  background-color: #fff;
-  font-weight: bold;
-}
-.tab-content {
-  display: none;
-}
-.active-content {
-  display: block;
-}
-.teamDescription {
-  margin-left: 10px;
-  color: #999;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  touch-action: none;
+  user-select: none;
+
+  h1 {
+    text-align: center;
+  }
+
+  input,
+  button {
+    font-size: 1rem;
+    padding: 3px;
+  }
+  button {
+    padding: 3px 10px;
+  }
+  #registrationForm,
+  #buzzerContainer {
+    display: none;
+    text-align: center;
+    margin-bottom: 50px;
+  }
+  #teamNameContainer {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+  }
+  #teamDescriptionContainer {
+    margin-bottom: 20px;
+    font-size: 16px;
+    color: #999;
+    display: none;
+  }
+  #changeRegistration {
+    cursor: pointer;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+  }
+  #team-name-input {
+    font-size: 16px;
+    padding: 3px;
+  }
+  #register-button {
+    font-size: 16px;
+    padding: 3px 10px;
+  }
+  #buzzer-button {
+    width: 85vw;
+    height: 85vw;
+    background-color: var(--color-accent);
+    border: none;
+    border-radius: 100%;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--color-background);
+    cursor: pointer;
+    transition: transform 0.1s;
+    touch-action: none;
+    user-select: none;
+  }
+  #buzzer-button:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+  #buzzer-button:disabled {
+    pointer-events: none;
+    background-color: var(--color-disabled);
+    cursor: not-allowed;
+    transition: none;
+  }
+  @media (orientation: landscape) {
+    body {
+      flex-direction: row;
+    }
+    #teamNameContainer {
+      padding-right: 20px;
+    }
+    #buzzer-button {
+      width: 40vw;
+      height: 40vw;
+    }
+  }
 }

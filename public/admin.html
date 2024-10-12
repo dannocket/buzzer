@@ -6,7 +6,7 @@
     <title>Quiz Buzzer - Admin</title>
     <link rel="stylesheet" href="/css/main.css" />
   </head>
-  <body>
+  <body class="page-admin">
     <div id="loginForm">
       <h2>Admin Login</h2>
       <input type="password" id="passwordInput" placeholder="Enter password" />
@@ -16,19 +16,17 @@
     <div id="adminPanel">
       <h2>Admin Panel</h2>
 
-      <!-- Tabs for navigation -->
-      <div class="tabs">
-        <div id="manageTab" class="tab active-tab">Manage Users</div>
-        <div id="resetTab" class="tab">Reset Buzzer</div>
-      </div>
-
       <!-- Content for managing users -->
       <div id="manageContent" class="tab-content active-content">
+        <h3>Manage Users</h3>
         <div id="usersList"></div>
       </div>
 
+      <hr />
+
       <!-- Content for resetting buzzer -->
       <div id="resetContent" class="tab-content">
+        <h3>Reset Buzzer</h3>
         <button id="resetButton">Reset Buzzer</button>
       </div>
     </div>
@@ -42,20 +40,9 @@
       const loginButton = document.getElementById("loginButton");
       const resetButton = document.getElementById("resetButton");
       const usersList = document.getElementById("usersList");
-      const manageTab = document.getElementById("manageTab");
-      const resetTab = document.getElementById("resetTab");
       const manageContent = document.getElementById("manageContent");
       const resetContent = document.getElementById("resetContent");
       let authHeader = "";
-
-      // Toggle tab functionality
-      manageTab.addEventListener("click", () => {
-        switchTab(manageTab, manageContent);
-      });
-
-      resetTab.addEventListener("click", () => {
-        switchTab(resetTab, resetContent);
-      });
 
       function switchTab(tab, content) {
         document
@@ -92,12 +79,10 @@
       });
 
       resetButton.addEventListener("click", () => {
-        if (confirm("Are you sure you want to reset the buzzer?")) {
-          fetch("/admin/reset", {
-            method: "POST",
-            headers: { Authorization: authHeader },
-          }).then((response) => response.json());
-        }
+        fetch("/admin/reset", {
+          method: "POST",
+          headers: { Authorization: authHeader },
+        }).then((response) => response.json());
       });
 
       function fetchUsers() {

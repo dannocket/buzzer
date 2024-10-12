@@ -9,7 +9,8 @@
     <title>Quiz Buzzer</title>
     <link rel="stylesheet" href="/css/main.css" />
   </head>
-  <body>
+  <body class="page-user">
+    <h1>Ash & Dan's Halloween Jeopardy</h1>
     <div id="registrationForm">
       <h2>Register Your Team</h2>
       <input type="text" id="team-name-input" placeholder="Enter team name" />
@@ -31,6 +32,32 @@
       let lastBuzzTime = 0;
       let reconnectionInterval;
       const buzzerButton = document.getElementById("buzzer-button");
+
+      // Function to request a screen wake lock
+      async function preventSleep() {
+        try {
+          const wakeLock = await navigator.wakeLock.request("screen");
+          console.log("Wake lock is active");
+
+          // Listen for visibility change to re-acquire the lock when needed
+          document.addEventListener("visibilitychange", async () => {
+            if (document.visibilityState === "visible") {
+              try {
+                await wakeLock.release();
+                await navigator.wakeLock.request("screen");
+                console.log("Wake lock re-acquired");
+              } catch (err) {
+                console.error(`Error re-acquiring wake lock: ${err}`);
+              }
+            }
+          });
+        } catch (err) {
+          console.error(`Error acquiring wake lock: ${err}`);
+        }
+      }
+
+      // Call the function to prevent the device from sleeping
+      preventSleep();
 
       function registerTeam() {
         teamName = document.getElementById("team-name-input").value.trim();
