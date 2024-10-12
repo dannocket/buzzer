@@ -19,6 +19,7 @@ body {
   color: var(--color-primary);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
     Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 16px;
   margin: 0;
 }
 
@@ -29,6 +30,14 @@ h4,
 h5,
 h6 {
   color: var(--color-heading);
+}
+
+input,
+button {
+  font-size: 1rem;
+  border: 1px solid #000;
+  border-radius: 0;
+  padding: 0.75rem;
 }
 
 button:active {
@@ -67,6 +76,7 @@ body.page-main {
     padding: 10px;
     border-bottom: 1px solid #f0f0f0;
     display: flex;
+    gap: 2rem;
     justify-content: space-between;
   }
   .timestamp {
@@ -81,15 +91,6 @@ body.page-admin {
   flex-direction: column;
   align-items: center;
   padding: 20px;
-
-  input,
-  button {
-    font-size: 1rem;
-    padding: 3px;
-  }
-  button {
-    padding: 3px 10px;
-  }
 
   #loginForm {
     width: 300px;
@@ -159,14 +160,6 @@ body.page-user {
     text-align: center;
   }
 
-  input,
-  button {
-    font-size: 1rem;
-    padding: 3px;
-  }
-  button {
-    padding: 3px 10px;
-  }
   #registrationForm,
   #buzzerContainer {
     display: none;
@@ -185,9 +178,6 @@ body.page-user {
   }
   #changeRegistration {
     cursor: pointer;
-    position: absolute;
-    top: 10px;
-    right: 10px;
   }
   #team-name-input {
     font-size: 16px;

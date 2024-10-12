@@ -9,8 +9,15 @@
   <body class="page-admin">
     <div id="loginForm">
       <h2>Admin Login</h2>
-      <input type="password" id="passwordInput" placeholder="Enter password" />
-      <button id="loginButton">Login</button>
+
+      <form id="admin-login-form">
+        <input
+          type="password"
+          id="passwordInput"
+          placeholder="Enter password"
+        />
+        <button id="loginButton">Login</button>
+      </form>
     </div>
 
     <div id="adminPanel">
@@ -55,28 +62,32 @@
         content.classList.add("active-content");
       }
 
-      loginButton.addEventListener("click", () => {
-        const password = passwordInput.value;
-        authHeader = "Basic " + btoa("admin:" + password);
-        fetch("/admin/login", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: authHeader,
-          },
-          body: JSON.stringify({ password }),
-        })
-          .then((response) => response.json())
-          .then((data) => {
-            if (data.success) {
-              loginForm.style.display = "none";
-              adminPanel.style.display = "block";
-              fetchUsers();
-            } else {
-              alert("Invalid password");
-            }
-          });
-      });
+      document
+        .getElementById("admin-login-form")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+
+          const password = passwordInput.value;
+          authHeader = "Basic " + btoa("admin:" + password);
+          fetch("/admin/login", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: authHeader,
+            },
+            body: JSON.stringify({ password }),
+          })
+            .then((response) => response.json())
+            .then((data) => {
+              if (data.success) {
+                loginForm.style.display = "none";
+                adminPanel.style.display = "block";
+                fetchUsers();
+              } else {
+                alert("Invalid password");
+              }
+            });
+        });
 
       resetButton.addEventListener("click", () => {
         fetch("/admin/reset", {

@@ -13,13 +13,21 @@
     <h1>Ash & Dan's Halloween Jeopardy</h1>
     <div id="registrationForm">
       <h2>Register Your Team</h2>
-      <input type="text" id="team-name-input" placeholder="Enter team name" />
-      <button id="register-button">Register</button>
+      <form id="team-registration-form">
+        <label for="team-name-input">Team Name</label>
+        <input
+          type="text"
+          id="team-name-input"
+          name="team-name"
+          placeholder="Enter team name"
+        />
+        <button type="submit" id="register-button">Register</button>
+      </form>
     </div>
     <div id="buzzerContainer">
       <div id="teamNameContainer">
         <span id="teamNameDisplay"></span>
-        <span id="changeRegistration">✎</span>
+        <span id="changeRegistration">&#x270E;</span>
       </div>
       <div id="teamDescriptionContainer"></div>
       <button id="buzzer-button">BUZZ!</button>
@@ -33,13 +41,10 @@
       let reconnectionInterval;
       const buzzerButton = document.getElementById("buzzer-button");
 
-      // Function to request a screen wake lock
       async function preventSleep() {
         try {
           const wakeLock = await navigator.wakeLock.request("screen");
           console.log("Wake lock is active");
-
-          // Listen for visibility change to re-acquire the lock when needed
           document.addEventListener("visibilitychange", async () => {
             if (document.visibilityState === "visible") {
               try {
@@ -56,7 +61,6 @@
         }
       }
 
-      // Call the function to prevent the device from sleeping
       preventSleep();
 
       function registerTeam() {
@@ -82,8 +86,8 @@
                 localStorage.setItem("teamPin", teamPin);
               } else {
                 alert("Registration failed: " + data.error);
-                document.getElementById("team-name-input").disabled = false; // Re-enable input
-                document.getElementById("register-button").disabled = false; // Re-enable button
+                document.getElementById("team-name-input").disabled = false;
+                document.getElementById("register-button").disabled = false;
               }
             });
         }
@@ -166,8 +170,11 @@
         }
       }
       document
-        .getElementById("register-button")
-        .addEventListener("click", registerTeam);
+        .getElementById("team-registration-form")
+        .addEventListener("submit", (event) => {
+          event.preventDefault();
+          registerTeam();
+        });
       buzzerButton.addEventListener("click", buzz);
       buzzerButton.addEventListener("touchstart", buzz);
       socket.on("reset", () => {
@@ -215,12 +222,10 @@
         e.returnValue = "";
       });
 
-      // Prevent page dragging on mobile
       document.addEventListener("touchmove", (e) => e.preventDefault(), {
         passive: false,
       });
 
-      // Lock orientation to portrait if possible
       if (screen.orientation && screen.orientation.lock) {
         screen.orientation.lock("portrait").catch(() => {});
       }
