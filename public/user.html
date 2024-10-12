@@ -12,9 +12,9 @@
   <body class="page-user">
     <h1>Ash & Dan's Halloween Jeopardy</h1>
     <div id="registrationForm">
-      <h2>Register Your Team</h2>
+      <h2>Register Your Name</h2>
       <form id="team-registration-form">
-        <label for="team-name-input">Team Name</label>
+        <label for="team-name-input">Name</label>
         <input
           type="text"
           id="team-name-input"
@@ -220,10 +220,6 @@
       window.addEventListener("beforeunload", (e) => {
         e.preventDefault();
         e.returnValue = "";
-      });
-
-      document.addEventListener("touchmove", (e) => e.preventDefault(), {
-        passive: false,
       });
 
       if (screen.orientation && screen.orientation.lock) {
