@@ -66,7 +66,7 @@
         resultElement.textContent = teamName;
         setTimeout(
           () => speak(teamName + (description ? ` - ${description}` : "")),
-          1000
+          1
         );
         confetti();
         buzzerSound.play();
