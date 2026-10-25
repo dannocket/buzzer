@@ -82,6 +82,7 @@
               if (data.success) {
                 loginForm.style.display = "none";
                 adminPanel.style.display = "block";
+                socket.emit("adminAuth", authHeader);
                 fetchUsers();
               } else {
                 alert("Invalid password");
@@ -136,7 +137,7 @@
 
       function updateUsersList(users) {
         usersList.innerHTML = "";
-        users.forEach(([pin, userData]) => {
+        users.forEach((userData) => {
           const userItem = document.createElement("div");
           const teamName = htmlentities(userData.teamName);
           const description = htmlentities(userData.description);
@@ -252,6 +253,13 @@
             }
           });
       }
+
+      // Socket.IO rooms don't survive a reconnect, so re-join the admin room.
+      socket.on("connect", () => {
+        if (adminPanel.style.display === "block") {
+          socket.emit("adminAuth", authHeader);
+        }
+      });
 
       socket.on("updateUsers", (users) => {
         updateUsersList(users);

@@ -16,10 +16,28 @@ const buzzerPresses = [];
 let buzzerPressed = false;
 const adminPassword = process.env.ADMIN_PASSWORD || "secret";
 const stateFilePath = path.join(__dirname, "appState.json");
+const ADMIN_ROOM = "admins";
 
 function getTeamByName(teamName) {
   return Array.from(registeredUsers.values()).find(
     (team) => team.teamName === teamName
+  );
+}
+
+function isValidAuthHeader(authHeader) {
+  if (typeof authHeader !== "string") {
+    return false;
+  }
+
+  const encodedCredentials = authHeader.split(" ")[1] || "";
+  const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString(
+    "ascii"
+  );
+  const [username, password] = decodedCredentials.split(":");
+
+  return (
+    username === "admin" &&
+    bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))
   );
 }
 
@@ -29,20 +47,27 @@ function checkAuth(req, res, next) {
     return res.status(401).json({ error: "No credentials sent!" });
   }
 
-  const encodedCredentials = authHeader.split(" ")[1];
-  const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString(
-    "ascii"
-  );
-  const [username, password] = decodedCredentials.split(":");
-
-  if (
-    username === "admin" &&
-    bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))
-  ) {
+  if (isValidAuthHeader(authHeader)) {
     next(); // Proceed to the next middleware or route handler
   } else {
     res.status(401).json({ error: "Invalid credentials" });
   }
+}
+
+// Team list for the admin screen. PINs and socket IDs never leave the server.
+function usersForAdmin() {
+  return Array.from(registeredUsers.values()).map(
+    ({ teamName, approved, description, pendingNameChange }) => ({
+      teamName,
+      approved,
+      description,
+      pendingNameChange,
+    })
+  );
+}
+
+function broadcastUsers() {
+  io.to(ADMIN_ROOM).emit("updateUsers", usersForAdmin());
 }
 
 async function saveState() {
@@ -96,7 +121,7 @@ app.post("/register", (req, res) => {
     const pin = crypto.randomBytes(4).toString("hex");
     registeredUsers.set(pin, { teamName, socketId, approved: false });
     res.json({ success: true, pin });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
     saveState();
   }
 });
@@ -153,7 +178,7 @@ app.post("/admin/login", checkAuth, (req, res) => {
 });
 
 app.get("/admin/users", checkAuth, (req, res) => {
-  res.json(Array.from(registeredUsers.entries()));
+  res.json(usersForAdmin());
 });
 
 app.post("/admin/approve", checkAuth, (req, res) => {
@@ -162,7 +187,7 @@ app.post("/admin/approve", checkAuth, (req, res) => {
   if (team) {
     team.approved = approve;
     res.json({ success: true });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
 
     if (approve && team.socketId) {
       io.to(team.socketId).emit("registrationApproved", team);
@@ -183,7 +208,7 @@ app.post("/admin/approveNameChange", checkAuth, (req, res) => {
     }
     delete team.pendingNameChange;
     res.json({ success: true });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
     saveState();
   } else {
     res.status(404).json({ error: "Team or name change request not found" });
@@ -201,7 +226,7 @@ app.post("/admin/editUser", checkAuth, (req, res) => {
       team.description = description;
       delete team.pendingNameChange;
       io.to(team.socketId).emit("teamUpdated", team);
-      io.emit("updateUsers", Array.from(registeredUsers.entries()));
+      broadcastUsers();
       res.json({ success: true });
       saveState();
     }
@@ -222,7 +247,7 @@ app.post("/admin/removeUser", checkAuth, (req, res) => {
     if (team.socketId) {
       io.to(team.socketId).emit("registrationRemoved", team);
     }
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
     res.json({ success: true });
     saveState();
   } else {
@@ -239,6 +264,13 @@ app.post("/admin/reset", checkAuth, (req, res) => {
 });
 
 io.on("connection", (socket) => {
+  socket.on("adminAuth", (authHeader) => {
+    if (isValidAuthHeader(authHeader)) {
+      socket.join(ADMIN_ROOM);
+      socket.emit("updateUsers", usersForAdmin());
+    }
+  });
+
   socket.on("buzzerPress", (data) => {
     const { pin } = data;
     const team = registeredUsers.get(pin);
@@ -267,7 +299,7 @@ io.on("connection", (socket) => {
       }
     }
     saveState();
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
   });
 });
 
