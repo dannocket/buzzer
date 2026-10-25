@@ -146,7 +146,8 @@ body.page-user {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  touch-action: none;
+  /* Allows panning and pinch zoom but not double-tap zoom. */
+  touch-action: manipulation;
   user-select: none;
 
   h1 {
