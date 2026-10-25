@@ -113,8 +113,18 @@
       socket.on("registrationRemoved", (data) =>
         showRegistrationForm(data.teamName)
       );
-      socket.on("teamUpdated", ({ teamName, description }) => {
-        showBuzzer(teamName, description, null);
+      // Keep the stored name in sync so later name change requests match.
+      function setTeamName(newName) {
+        teamName = newName;
+        localStorage.setItem("teamName", newName);
+      }
+      socket.on("teamUpdated", (team) => {
+        setTeamName(team.teamName);
+        showBuzzer(team.teamName, team.description, null);
+      });
+      socket.on("nameChange", ({ newName }) => {
+        setTeamName(newName);
+        document.getElementById("teamNameDisplay").textContent = newName;
       });
       function showBuzzer(teamName, description = "", hasPressed = false) {
         document.getElementById("registrationForm").style.display = "none";
@@ -152,6 +162,7 @@
             .then((response) => response.json())
             .then((data) => {
               if (data.success) {
+                setTeamName(data.teamName);
                 showBuzzer(data.teamName, data.description, data.hasPressed);
               } else {
                 showRegistrationForm(teamName);
