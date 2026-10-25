@@ -181,8 +181,15 @@
           event.preventDefault();
           registerTeam();
         });
-      buzzerButton.addEventListener("click", buzz);
-      buzzerButton.addEventListener("touchstart", buzz);
+      // Buzz on press rather than release so timing is fair. pointerdown
+      // covers mouse, touch and pen; keyboard activation arrives as a click
+      // with detail 0.
+      buzzerButton.addEventListener("pointerdown", buzz);
+      buzzerButton.addEventListener("click", (event) => {
+        if (event.detail === 0) {
+          buzz();
+        }
+      });
       socket.on("reset", () => {
         buzzerButton.disabled = false;
         lastBuzzTime = 0;
