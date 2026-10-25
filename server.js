@@ -171,6 +171,8 @@ app.post("/changeTeamName", (req, res) => {
       res.status(400).json({ error: "New team name already exists" });
     } else {
       team.pendingNameChange = newName;
+      broadcastUsers();
+      saveState();
       res.json({
         success: true,
         message: "Name change request submitted for approval",
