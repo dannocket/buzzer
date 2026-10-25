@@ -171,7 +171,12 @@ body.page-user {
     display: none;
   }
   #changeRegistration {
+    background: none;
+    border: none;
+    color: inherit;
     cursor: pointer;
+    font-size: inherit;
+    padding: 0 0.25rem;
   }
   #team-name-input {
     font-size: 1rem;
