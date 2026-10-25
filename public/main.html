@@ -16,6 +16,7 @@
       const primaryNotificationVolume = 0.4;
       const secondaryNotificationVolume = 0.5;
 
+      const waitingText = "Waiting for buzzer press...";
       const socket = io();
       const resultElement = document.getElementById("result");
       const pressesListElement = document.getElementById("pressesList");
@@ -78,12 +79,23 @@
         buzzerSound.play();
       }
 
+      // Restore the current round after a page reload or server reconnect,
+      // without replaying sounds.
+      socket.on("connect", async () => {
+        const presses = await fetch("/history").then((response) =>
+          response.json()
+        );
+        knownPressCount = presses.length;
+        updatePresses(presses);
+        resultElement.textContent = presses[0]?.teamName ?? waitingText;
+      });
+
       socket.on("buzzerPressed", buzzerPressed);
 
       socket.on("updatePresses", updatePresses);
 
       socket.on("reset", () => {
-        resultElement.textContent = "Waiting for buzzer press...";
+        resultElement.textContent = waitingText;
         pressesListElement.innerHTML = "";
         knownPressCount = 0;
       });
