@@ -284,7 +284,13 @@ io.on("connection", (socket) => {
     const { pin } = data ?? {};
     const team = registeredUsers.get(pin);
 
-    if (team && team.socketId === socket.id) {
+    // Only approved teams may buzz, and only once per round.
+    if (
+      team &&
+      team.approved &&
+      team.socketId === socket.id &&
+      !buzzerPresses.some((press) => press.teamName === team.teamName)
+    ) {
       const { teamName, description } = team;
       const timestamp = new Date().toISOString();
       buzzerPresses.push({ teamName, timestamp });
