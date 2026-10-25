@@ -83,13 +83,39 @@ function broadcastUsers() {
   io.to(ADMIN_ROOM).emit("updateUsers", usersForAdmin());
 }
 
-async function saveState() {
+let saveInProgress = null;
+let saveQueued = false;
+
+// Writes run one at a time; calls made during a write are coalesced into a
+// single follow-up write that snapshots the latest state.
+function saveState() {
+  if (saveInProgress) {
+    saveQueued = true;
+    return saveInProgress;
+  }
+  saveInProgress = writeState()
+    .catch((error) => console.error("Error saving state:", error.message))
+    .finally(() => {
+      saveInProgress = null;
+      if (saveQueued) {
+        saveQueued = false;
+        saveState();
+      }
+    });
+  return saveInProgress;
+}
+
+// Write to a temp file and rename it, so a crash mid-write can't leave a
+// truncated appState.json behind.
+async function writeState() {
   const state = {
     registeredUsers: Array.from(registeredUsers.entries()),
     buzzerPresses,
     buzzerPressed,
   };
-  await fs.writeFile(stateFilePath, JSON.stringify(state, null, 2));
+  const tempFilePath = `${stateFilePath}.tmp`;
+  await fs.writeFile(tempFilePath, JSON.stringify(state, null, 2));
+  await fs.rename(tempFilePath, stateFilePath);
 }
 
 async function loadState() {
