@@ -71,11 +71,7 @@
           authHeader = "Basic " + btoa("admin:" + password);
           fetch("/admin/login", {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: authHeader,
-            },
-            body: JSON.stringify({ password }),
+            headers: { Authorization: authHeader },
           })
             .then((response) => response.json())
             .then((data) => {

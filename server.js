@@ -2,7 +2,6 @@ const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-const bcrypt = require("bcrypt");
 const crypto = require("crypto");
 const { warn } = require("console");
 const fs = require("fs").promises;
@@ -30,15 +29,27 @@ function isValidAuthHeader(authHeader) {
   }
 
   const encodedCredentials = authHeader.split(" ")[1] || "";
+  // btoa() on the client produces Latin-1, so decode the same way.
   const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString(
-    "ascii"
+    "latin1"
   );
-  const [username, password] = decodedCredentials.split(":");
+  // Split on the first colon only; passwords may contain colons.
+  const separatorIndex = decodedCredentials.indexOf(":");
+  if (separatorIndex === -1) {
+    return false;
+  }
+  const username = decodedCredentials.slice(0, separatorIndex);
+  const password = decodedCredentials.slice(separatorIndex + 1);
 
-  return (
-    username === "admin" &&
-    bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))
-  );
+  return username === "admin" && safeEqual(password, adminPassword);
+}
+
+// Constant-time string comparison. Hashing first gives both buffers the
+// same length, which timingSafeEqual requires.
+function safeEqual(a, b) {
+  const hashA = crypto.createHash("sha256").update(a).digest();
+  const hashB = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 function checkAuth(req, res, next) {
@@ -168,13 +179,9 @@ app.post("/changeTeamName", (req, res) => {
   }
 });
 
+// checkAuth has already validated the credentials.
 app.post("/admin/login", checkAuth, (req, res) => {
-  const { password } = req.body;
-  if (bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))) {
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ error: "Invalid password" });
-  }
+  res.json({ success: true });
 });
 
 app.get("/admin/users", checkAuth, (req, res) => {
