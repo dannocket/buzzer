@@ -173,7 +173,7 @@ app.post("/admin/approve", checkAuth, (req, res) => {
   }
 });
 
-app.post("/admin/approveNameChange", (req, res) => {
+app.post("/admin/approveNameChange", checkAuth, (req, res) => {
   const { oldName, newName, approve } = req.body;
   const team = getTeamByName(oldName);
   if (team && team.pendingNameChange === newName) {
@@ -184,6 +184,7 @@ app.post("/admin/approveNameChange", (req, res) => {
     delete team.pendingNameChange;
     res.json({ success: true });
     io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    saveState();
   } else {
     res.status(404).json({ error: "Team or name change request not found" });
   }
