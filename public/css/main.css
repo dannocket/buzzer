@@ -109,16 +109,30 @@ body.page-admin {
   align-items: center;
   padding: 20px;
 
+  /* Fluid widths so the admin screen reflows on phones (WCAG 1.4.10). */
   #loginForm {
-    width: 300px;
+    width: 100%;
+    max-width: 300px;
     text-align: center;
   }
-  #adminPanel {
-    width: 500px;
-    text-align: center;
+  #admin-login-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  #admin-login-form label {
+    flex-basis: 100%;
+  }
+  #passwordInput {
+    flex: 1 1 8rem;
+    min-width: 0;
   }
   #adminPanel {
     display: none;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
   }
   #usersList {
     margin-top: 20px;
@@ -126,11 +140,17 @@ body.page-admin {
   }
   .userItem {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
     margin-bottom: 10px;
   }
   .userItem > span {
+    flex: 1 1 10rem;
     padding: 3px 10px 3px 0;
+    text-align: left;
+    overflow-wrap: anywhere;
   }
   .teamDescription {
     margin-left: 10px;
