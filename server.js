@@ -13,7 +13,9 @@ app.use(express.static("public"));
 const registeredUsers = new Map();
 const buzzerPresses = [];
 let buzzerPressed = false;
-const adminPassword = process.env.ADMIN_PASSWORD || "secret";
+// Without ADMIN_PASSWORD, generate a one-off password and print it at startup.
+const adminPassword =
+  process.env.ADMIN_PASSWORD || crypto.randomBytes(6).toString("base64url");
 const stateFilePath = path.join(__dirname, "appState.json");
 const ADMIN_ROOM = "admins";
 
@@ -313,5 +315,8 @@ io.on("connection", (socket) => {
 const port = process.env.PORT || 3000;
 http.listen(port, () => {
   console.log(`Server running on port ${port}`);
+  if (!process.env.ADMIN_PASSWORD) {
+    console.log(`Admin password (set ADMIN_PASSWORD to choose one): ${adminPassword}`);
+  }
   loadState();
 });

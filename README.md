@@ -16,7 +16,13 @@ node server.js
 
 ## Password
 
-Default admin password is `secret`. Can be configured via the environment variable `ADMIN_PASSWORD`.
+Set the admin password with the `ADMIN_PASSWORD` environment variable:
+
+```
+ADMIN_PASSWORD=your-password node server.js
+```
+
+If it isn't set, the server generates a random password on each start and prints it to the console.
 
 ## Features
 
