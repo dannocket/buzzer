@@ -3,6 +3,8 @@
 A realtime buzzer app that works within LAN, without internet connection, for use with Quiz competitions.
 Any smartphone can be used as the client.
 
+Requires Node 22.12 or later.
+
 ```
 npm install
 node server.js
@@ -49,8 +51,6 @@ If it isn't set, the server generates a random password on each start and prints
 - Ensure that mobile phone screen has the longest timeout to prevent the screen from locking during competition. The app asks the browser to keep the screen awake, but browsers only allow that over HTTPS or on localhost, so it won't work over a plain-HTTP LAN address.
 
 ## Testing
-
-The test tooling needs Node 22.12 or later.
 
 Server tests use [Vitest](https://vitest.dev). Each test starts its own server on a random port with a temporary state file, so your `appState.json` is never touched.
 
