@@ -248,7 +248,7 @@ app.post("/admin/removeUser", checkAuth, (req, res) => {
   const { teamName } = req.body ?? {};
   const pin = Array.from(registeredUsers.entries()).find(
     ([k, v]) => v.teamName === teamName
-  )[0];
+  )?.[0];
 
   if (pin) {
     const team = registeredUsers.get(pin);
