@@ -69,13 +69,6 @@ body.page-main {
     font-size: 2rem;
     text-align: center;
   }
-  #history-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
   #pressesList {
     width: max-content;
     max-height: 80vh;
@@ -94,6 +87,18 @@ body.page-main {
   .timestamp {
     font-family: monospace;
   }
+  #soundOverlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    background-color: var(--color-background);
+    text-align: center;
+  }
 }
 
 /* Admin */
@@ -104,52 +109,48 @@ body.page-admin {
   align-items: center;
   padding: 20px;
 
+  /* Fluid widths so the admin screen reflows on phones (WCAG 1.4.10). */
   #loginForm {
-    width: 300px;
+    width: 100%;
+    max-width: 300px;
     text-align: center;
   }
-  #adminPanel {
-    width: 500px;
-    text-align: center;
+  #admin-login-form {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  #admin-login-form label {
+    flex-basis: 100%;
+  }
+  #passwordInput {
+    flex: 1 1 8rem;
+    min-width: 0;
   }
   #adminPanel {
     display: none;
+    width: 100%;
+    max-width: 500px;
+    text-align: center;
   }
-  #usersList,
-  #resetSection {
+  #usersList {
     margin-top: 20px;
     width: 100%;
   }
   .userItem {
     display: flex;
+    flex-wrap: wrap;
+    align-items: center;
     justify-content: space-between;
+    gap: 0.5rem;
     margin-bottom: 10px;
   }
   .userItem > span {
+    flex: 1 1 10rem;
     padding: 3px 10px 3px 0;
-  }
-  .pending-name-change {
-    color: orange;
-  }
-  .tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-  }
-  .tab {
-    cursor: pointer;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    background-color: #f9f9f9;
-    width: 100%;
-  }
-  .active-tab {
-    background-color: #fff;
-    font-weight: bold;
-  }
-  .active-content {
-    display: block;
+    text-align: left;
+    overflow-wrap: anywhere;
   }
   .teamDescription {
     margin-left: 10px;
@@ -165,7 +166,8 @@ body.page-user {
   align-items: center;
   justify-content: center;
   height: 100vh;
-  touch-action: none;
+  /* Allows panning and pinch zoom but not double-tap zoom. */
+  touch-action: manipulation;
   user-select: none;
 
   h1 {
@@ -189,7 +191,12 @@ body.page-user {
     display: none;
   }
   #changeRegistration {
+    background: none;
+    border: none;
+    color: inherit;
     cursor: pointer;
+    font-size: inherit;
+    padding: 0 0.25rem;
   }
   #team-name-input {
     font-size: 1rem;

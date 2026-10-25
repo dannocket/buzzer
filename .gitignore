@@ -1,4 +1,4 @@
 node_modules/
-appState.json
+appState.json*
 *.code-workspace
 .DS_Store

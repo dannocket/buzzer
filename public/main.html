@@ -7,15 +7,23 @@
     <link rel="stylesheet" href="/css/main.css" />
   </head>
   <body class="page-main">
-    <div id="result">Waiting for buzzer press...</div>
+    <!-- Browsers block audio and speech until the page gets a user gesture. -->
+    <div id="soundOverlay">
+      <button type="button" id="enableSoundButton" autofocus>
+        Start main screen
+      </button>
+      <p>Click to enable sounds and announcements.</p>
+    </div>
+    <div id="result" role="status">Waiting for buzzer press...</div>
     <div id="pressesList"></div>
 
     <script src="/socket.io/socket.io.js"></script>
-    <script src="confetti.browser.min.js"></script>
+    <script src="confetti.browser.js"></script>
     <script>
       const primaryNotificationVolume = 0.4;
       const secondaryNotificationVolume = 0.5;
 
+      const waitingText = "Waiting for buzzer press...";
       const socket = io();
       const resultElement = document.getElementById("result");
       const pressesListElement = document.getElementById("pressesList");
@@ -25,6 +33,8 @@
 
       buzzerSound.volume = primaryNotificationVolume;
       subsequentBuzzerSound.volume = secondaryNotificationVolume;
+      // Number of presses already rendered, so each new press sounds once.
+      let knownPressCount = 0;
 
       function formatDate(date) {
         const hours = date.getHours();
@@ -44,22 +54,26 @@
 
       function updatePresses(presses) {
         pressesListElement.innerHTML = "";
-        presses.forEach((press, index) => {
+        presses.forEach((press) => {
           const pressItem = document.createElement("div");
           pressItem.className = "pressItem";
           const date = new Date(press.timestamp);
-          const formattedTime = `<span class="timestamp">${formatDate(
-            date
-          )}</span>`;
-          pressItem.innerHTML = `${press.teamName}  ${formattedTime}`;
+          const teamNameElement = document.createElement("span");
+          teamNameElement.textContent = press.teamName;
+          const timestampElement = document.createElement("span");
+          timestampElement.className = "timestamp";
+          timestampElement.textContent = formatDate(date);
+          pressItem.append(teamNameElement, timestampElement);
           pressesListElement.appendChild(pressItem);
-
-          if (index > 0) {
-            const audio = subsequentBuzzerSound.cloneNode(true);
-            audio.volume = secondaryNotificationVolume;
-            audio.play();
-          }
         });
+
+        // The first press has its own sound in buzzerPressed().
+        if (presses.length > knownPressCount && presses.length > 1) {
+          const audio = subsequentBuzzerSound.cloneNode(true);
+          audio.volume = secondaryNotificationVolume;
+          playSound(audio);
+        }
+        knownPressCount = presses.length;
       }
 
       function buzzerPressed({ teamName, description }) {
@@ -69,16 +83,40 @@
           1
         );
         confetti();
-        buzzerSound.play();
+        playSound(buzzerSound);
       }
+
+      // play() rejects if the browser still blocks autoplay; don't let that
+      // surface as an unhandled rejection.
+      function playSound(audio) {
+        audio.play().catch((err) => console.warn(`Sound blocked: ${err}`));
+      }
+
+      document
+        .getElementById("enableSoundButton")
+        .addEventListener("click", () => {
+          document.getElementById("soundOverlay").remove();
+        });
+
+      // Restore the current round after a page reload or server reconnect,
+      // without replaying sounds.
+      socket.on("connect", async () => {
+        const presses = await fetch("/history").then((response) =>
+          response.json()
+        );
+        knownPressCount = presses.length;
+        updatePresses(presses);
+        resultElement.textContent = presses[0]?.teamName ?? waitingText;
+      });
 
       socket.on("buzzerPressed", buzzerPressed);
 
       socket.on("updatePresses", updatePresses);
 
       socket.on("reset", () => {
-        resultElement.textContent = "Waiting for buzzer press...";
+        resultElement.textContent = waitingText;
         pressesListElement.innerHTML = "";
+        knownPressCount = 0;
       });
 
       function speak(text) {

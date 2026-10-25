@@ -2,10 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no"
-    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Buzzer</title>
     <link rel="stylesheet" href="/css/main.css" />
   </head>
@@ -27,7 +24,13 @@
     <div id="buzzerContainer">
       <div id="teamNameContainer">
         <span id="teamNameDisplay"></span>
-        <span id="changeRegistration">&#x270E;</span>
+        <button
+          type="button"
+          id="changeRegistration"
+          aria-label="Change team name"
+        >
+          <span aria-hidden="true">&#x270E;</span>
+        </button>
       </div>
       <div id="teamDescriptionContainer"></div>
       <button id="buzzer-button">BUZZ!</button>
@@ -41,25 +44,31 @@
       let reconnectionInterval;
       const buzzerButton = document.getElementById("buzzer-button");
 
+      let wakeLock = null;
+
+      // The Wake Lock API needs a secure context (HTTPS or localhost), so it
+      // is unavailable when the server is reached by LAN IP over plain HTTP.
       async function preventSleep() {
+        if (!("wakeLock" in navigator)) {
+          return;
+        }
         try {
-          const wakeLock = await navigator.wakeLock.request("screen");
+          wakeLock = await navigator.wakeLock.request("screen");
           console.log("Wake lock is active");
-          document.addEventListener("visibilitychange", async () => {
-            if (document.visibilityState === "visible") {
-              try {
-                await wakeLock.release();
-                await navigator.wakeLock.request("screen");
-                console.log("Wake lock re-acquired");
-              } catch (err) {
-                console.error(`Error re-acquiring wake lock: ${err}`);
-              }
-            }
-          });
         } catch (err) {
           console.error(`Error acquiring wake lock: ${err}`);
         }
       }
+
+      // The browser releases the lock whenever the page is hidden.
+      document.addEventListener("visibilitychange", () => {
+        if (
+          document.visibilityState === "visible" &&
+          (!wakeLock || wakeLock.released)
+        ) {
+          preventSleep();
+        }
+      });
 
       preventSleep();
 
@@ -107,8 +116,18 @@
       socket.on("registrationRemoved", (data) =>
         showRegistrationForm(data.teamName)
       );
-      socket.on("teamUpdated", ({ teamName, description }) => {
-        showBuzzer(teamName, description, null);
+      // Keep the stored name in sync so later name change requests match.
+      function setTeamName(newName) {
+        teamName = newName;
+        localStorage.setItem("teamName", newName);
+      }
+      socket.on("teamUpdated", (team) => {
+        setTeamName(team.teamName);
+        showBuzzer(team.teamName, team.description, null);
+      });
+      socket.on("nameChange", ({ newName }) => {
+        setTeamName(newName);
+        document.getElementById("teamNameDisplay").textContent = newName;
       });
       function showBuzzer(teamName, description = "", hasPressed = false) {
         document.getElementById("registrationForm").style.display = "none";
@@ -146,6 +165,7 @@
             .then((response) => response.json())
             .then((data) => {
               if (data.success) {
+                setTeamName(data.teamName);
                 showBuzzer(data.teamName, data.description, data.hasPressed);
               } else {
                 showRegistrationForm(teamName);
@@ -175,8 +195,15 @@
           event.preventDefault();
           registerTeam();
         });
-      buzzerButton.addEventListener("click", buzz);
-      buzzerButton.addEventListener("touchstart", buzz);
+      // Buzz on press rather than release so timing is fair. pointerdown
+      // covers mouse, touch and pen; keyboard activation arrives as a click
+      // with detail 0.
+      buzzerButton.addEventListener("pointerdown", buzz);
+      buzzerButton.addEventListener("click", (event) => {
+        if (event.detail === 0) {
+          buzz();
+        }
+      });
       socket.on("reset", () => {
         buzzerButton.disabled = false;
         lastBuzzTime = 0;

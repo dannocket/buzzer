@@ -2,25 +2,57 @@ const express = require("express");
 const app = express();
 const http = require("http").createServer(app);
 const io = require("socket.io")(http);
-const bcrypt = require("bcrypt");
 const crypto = require("crypto");
-const { warn } = require("console");
 const fs = require("fs").promises;
 const path = require("path");
 
+const publicDir = path.join(__dirname, "public");
+
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(publicDir));
 
 const registeredUsers = new Map();
 const buzzerPresses = [];
 let buzzerPressed = false;
-const adminPassword = process.env.ADMIN_PASSWORD || "secret";
+// Without ADMIN_PASSWORD, generate a one-off password and print it at startup.
+const adminPassword =
+  process.env.ADMIN_PASSWORD || crypto.randomBytes(6).toString("base64url");
 const stateFilePath = path.join(__dirname, "appState.json");
+const ADMIN_ROOM = "admins";
 
 function getTeamByName(teamName) {
   return Array.from(registeredUsers.values()).find(
     (team) => team.teamName === teamName
   );
+}
+
+function isValidAuthHeader(authHeader) {
+  if (typeof authHeader !== "string") {
+    return false;
+  }
+
+  const encodedCredentials = authHeader.split(" ")[1] || "";
+  // btoa() on the client produces Latin-1, so decode the same way.
+  const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString(
+    "latin1"
+  );
+  // Split on the first colon only; passwords may contain colons.
+  const separatorIndex = decodedCredentials.indexOf(":");
+  if (separatorIndex === -1) {
+    return false;
+  }
+  const username = decodedCredentials.slice(0, separatorIndex);
+  const password = decodedCredentials.slice(separatorIndex + 1);
+
+  return username === "admin" && safeEqual(password, adminPassword);
+}
+
+// Constant-time string comparison. Hashing first gives both buffers the
+// same length, which timingSafeEqual requires.
+function safeEqual(a, b) {
+  const hashA = crypto.createHash("sha256").update(a).digest();
+  const hashB = crypto.createHash("sha256").update(b).digest();
+  return crypto.timingSafeEqual(hashA, hashB);
 }
 
 function checkAuth(req, res, next) {
@@ -29,29 +61,62 @@ function checkAuth(req, res, next) {
     return res.status(401).json({ error: "No credentials sent!" });
   }
 
-  const encodedCredentials = authHeader.split(" ")[1];
-  const decodedCredentials = Buffer.from(encodedCredentials, "base64").toString(
-    "ascii"
-  );
-  const [username, password] = decodedCredentials.split(":");
-
-  if (
-    username === "admin" &&
-    bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))
-  ) {
+  if (isValidAuthHeader(authHeader)) {
     next(); // Proceed to the next middleware or route handler
   } else {
     res.status(401).json({ error: "Invalid credentials" });
   }
 }
 
-async function saveState() {
+// Team list for the admin screen. PINs and socket IDs never leave the server.
+function usersForAdmin() {
+  return Array.from(registeredUsers.values()).map(
+    ({ teamName, approved, description, pendingNameChange }) => ({
+      teamName,
+      approved,
+      description,
+      pendingNameChange,
+    })
+  );
+}
+
+function broadcastUsers() {
+  io.to(ADMIN_ROOM).emit("updateUsers", usersForAdmin());
+}
+
+let saveInProgress = null;
+let saveQueued = false;
+
+// Writes run one at a time; calls made during a write are coalesced into a
+// single follow-up write that snapshots the latest state.
+function saveState() {
+  if (saveInProgress) {
+    saveQueued = true;
+    return saveInProgress;
+  }
+  saveInProgress = writeState()
+    .catch((error) => console.error("Error saving state:", error.message))
+    .finally(() => {
+      saveInProgress = null;
+      if (saveQueued) {
+        saveQueued = false;
+        saveState();
+      }
+    });
+  return saveInProgress;
+}
+
+// Write to a temp file and rename it, so a crash mid-write can't leave a
+// truncated appState.json behind.
+async function writeState() {
   const state = {
     registeredUsers: Array.from(registeredUsers.entries()),
     buzzerPresses,
     buzzerPressed,
   };
-  await fs.writeFile(stateFilePath, JSON.stringify(state, null, 2));
+  const tempFilePath = `${stateFilePath}.tmp`;
+  await fs.writeFile(tempFilePath, JSON.stringify(state, null, 2));
+  await fs.rename(tempFilePath, stateFilePath);
 }
 
 async function loadState() {
@@ -70,15 +135,15 @@ async function loadState() {
 }
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/user.html");
+  res.sendFile(path.join(publicDir, "user.html"));
 });
 
 app.get("/main", (req, res) => {
-  res.sendFile(__dirname + "/public/main.html");
+  res.sendFile(path.join(publicDir, "main.html"));
 });
 
 app.get("/admin", (req, res) => {
-  res.sendFile(__dirname + "/public/admin.html");
+  res.sendFile(path.join(publicDir, "admin.html"));
 });
 
 app.get("/history", (req, res) => {
@@ -86,7 +151,7 @@ app.get("/history", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { teamName, socketId } = req.body;
+  const { teamName, socketId } = req.body ?? {};
 
   const team = getTeamByName(teamName);
 
@@ -96,13 +161,13 @@ app.post("/register", (req, res) => {
     const pin = crypto.randomBytes(4).toString("hex");
     registeredUsers.set(pin, { teamName, socketId, approved: false });
     res.json({ success: true, pin });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
     saveState();
   }
 });
 
 app.post("/reRegister", (req, res) => {
-  const { pin, socketId } = req.body;
+  const { pin, socketId } = req.body ?? {};
   const team = registeredUsers.get(pin);
   if (team && team.approved) {
     team.socketId = socketId;
@@ -125,7 +190,7 @@ app.post("/reRegister", (req, res) => {
 });
 
 app.post("/changeTeamName", (req, res) => {
-  const { oldName, newName, pin } = req.body;
+  const { oldName, newName, pin } = req.body ?? {};
   const team = registeredUsers.get(pin);
 
   if (team && team.teamName === oldName) {
@@ -133,6 +198,8 @@ app.post("/changeTeamName", (req, res) => {
       res.status(400).json({ error: "New team name already exists" });
     } else {
       team.pendingNameChange = newName;
+      broadcastUsers();
+      saveState();
       res.json({
         success: true,
         message: "Name change request submitted for approval",
@@ -143,26 +210,22 @@ app.post("/changeTeamName", (req, res) => {
   }
 });
 
+// checkAuth has already validated the credentials.
 app.post("/admin/login", checkAuth, (req, res) => {
-  const { password } = req.body;
-  if (bcrypt.compareSync(password, bcrypt.hashSync(adminPassword, 10))) {
-    res.json({ success: true });
-  } else {
-    res.status(401).json({ error: "Invalid password" });
-  }
+  res.json({ success: true });
 });
 
 app.get("/admin/users", checkAuth, (req, res) => {
-  res.json(Array.from(registeredUsers.entries()));
+  res.json(usersForAdmin());
 });
 
 app.post("/admin/approve", checkAuth, (req, res) => {
-  const { teamName, approve } = req.body;
+  const { teamName, approve } = req.body ?? {};
   const team = getTeamByName(teamName);
   if (team) {
     team.approved = approve;
     res.json({ success: true });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
 
     if (approve && team.socketId) {
       io.to(team.socketId).emit("registrationApproved", team);
@@ -173,8 +236,8 @@ app.post("/admin/approve", checkAuth, (req, res) => {
   }
 });
 
-app.post("/admin/approveNameChange", (req, res) => {
-  const { oldName, newName, approve } = req.body;
+app.post("/admin/approveNameChange", checkAuth, (req, res) => {
+  const { oldName, newName, approve } = req.body ?? {};
   const team = getTeamByName(oldName);
   if (team && team.pendingNameChange === newName) {
     if (approve) {
@@ -183,14 +246,15 @@ app.post("/admin/approveNameChange", (req, res) => {
     }
     delete team.pendingNameChange;
     res.json({ success: true });
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
+    saveState();
   } else {
     res.status(404).json({ error: "Team or name change request not found" });
   }
 });
 
 app.post("/admin/editUser", checkAuth, (req, res) => {
-  const { oldName, newName, description } = req.body;
+  const { oldName, newName, description } = req.body ?? {};
   const team = getTeamByName(oldName);
   if (team) {
     if (getTeamByName(newName) && newName !== oldName) {
@@ -200,7 +264,7 @@ app.post("/admin/editUser", checkAuth, (req, res) => {
       team.description = description;
       delete team.pendingNameChange;
       io.to(team.socketId).emit("teamUpdated", team);
-      io.emit("updateUsers", Array.from(registeredUsers.entries()));
+      broadcastUsers();
       res.json({ success: true });
       saveState();
     }
@@ -210,10 +274,10 @@ app.post("/admin/editUser", checkAuth, (req, res) => {
 });
 
 app.post("/admin/removeUser", checkAuth, (req, res) => {
-  const { teamName } = req.body;
+  const { teamName } = req.body ?? {};
   const pin = Array.from(registeredUsers.entries()).find(
     ([k, v]) => v.teamName === teamName
-  )[0];
+  )?.[0];
 
   if (pin) {
     const team = registeredUsers.get(pin);
@@ -221,7 +285,7 @@ app.post("/admin/removeUser", checkAuth, (req, res) => {
     if (team.socketId) {
       io.to(team.socketId).emit("registrationRemoved", team);
     }
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
+    broadcastUsers();
     res.json({ success: true });
     saveState();
   } else {
@@ -238,11 +302,24 @@ app.post("/admin/reset", checkAuth, (req, res) => {
 });
 
 io.on("connection", (socket) => {
+  socket.on("adminAuth", (authHeader) => {
+    if (isValidAuthHeader(authHeader)) {
+      socket.join(ADMIN_ROOM);
+      socket.emit("updateUsers", usersForAdmin());
+    }
+  });
+
   socket.on("buzzerPress", (data) => {
-    const { pin } = data;
+    const { pin } = data ?? {};
     const team = registeredUsers.get(pin);
 
-    if (team && team.socketId === socket.id) {
+    // Only approved teams may buzz, and only once per round.
+    if (
+      team &&
+      team.approved &&
+      team.socketId === socket.id &&
+      !buzzerPresses.some((press) => press.teamName === team.teamName)
+    ) {
       const { teamName, description } = team;
       const timestamp = new Date().toISOString();
       buzzerPresses.push({ teamName, timestamp });
@@ -255,6 +332,8 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Main screen and admin sockets aren't teams, so only act when a team's
+  // socket disconnects.
   socket.on("disconnect", () => {
     for (const [pin, team] of registeredUsers.entries()) {
       if (team.socketId === socket.id) {
@@ -262,16 +341,21 @@ io.on("connection", (socket) => {
           registeredUsers.delete(pin);
         }
         team.socketId = null;
+        saveState();
+        broadcastUsers();
         break;
       }
     }
-    saveState();
-    io.emit("updateUsers", Array.from(registeredUsers.entries()));
   });
 });
 
 const port = process.env.PORT || 3000;
-http.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  loadState();
+// Load saved state first so early clients don't see an empty game.
+loadState().then(() => {
+  http.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+    if (!process.env.ADMIN_PASSWORD) {
+      console.log(`Admin password (set ADMIN_PASSWORD to choose one): ${adminPassword}`);
+    }
+  });
 });
