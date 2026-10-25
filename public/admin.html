@@ -105,11 +105,14 @@
           });
       }
 
-      const dummy = document.createElement("div");
+      // Output is used in text and in quoted attributes, so quotes must be escaped too.
       function htmlentities(val) {
-        dummy.textContent = val;
-
-        return dummy.innerHTML;
+        return String(val ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
 
       usersList.addEventListener("click", function (e) {
@@ -145,7 +148,7 @@
           userItem.className = "userItem";
           userItem.innerHTML = `
                     <span>${teamName}${
-            userData.pendingNameChange ? ` (${userData.pendingNameChange})` : ""
+            userData.pendingNameChange ? ` (${pendingNameChange})` : ""
           }<span class="teamDescription">${description}</span></span>
 
                     <div data-team-name="${teamName}" data-pending-name-change="${pendingNameChange}" data-description="${description}">

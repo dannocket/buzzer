@@ -48,10 +48,12 @@
           const pressItem = document.createElement("div");
           pressItem.className = "pressItem";
           const date = new Date(press.timestamp);
-          const formattedTime = `<span class="timestamp">${formatDate(
-            date
-          )}</span>`;
-          pressItem.innerHTML = `${press.teamName}  ${formattedTime}`;
+          const teamNameElement = document.createElement("span");
+          teamNameElement.textContent = press.teamName;
+          const timestampElement = document.createElement("span");
+          timestampElement.className = "timestamp";
+          timestampElement.textContent = formatDate(date);
+          pressItem.append(teamNameElement, timestampElement);
           pressesListElement.appendChild(pressItem);
 
           if (index > 0) {
