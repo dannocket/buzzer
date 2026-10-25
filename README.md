@@ -44,4 +44,4 @@ If it isn't set, the server generates a random password on each start and prints
 - Run in local Wireless LAN (WiFi network) with static IP for the server machine.
 - Distribute the WiFi network name, and server url as QR code for easy client setup.
 - Place the mobile phone in **Do not disturb** (DND) mode, to prevent calls during competition.
-- Ensure that mobile phone screen has the longest timeout to prevent the screen from locking during competition.
+- Ensure that mobile phone screen has the longest timeout to prevent the screen from locking during competition. The app asks the browser to keep the screen awake, but browsers only allow that over HTTPS or on localhost, so it won't work over a plain-HTTP LAN address.

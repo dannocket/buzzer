@@ -41,25 +41,31 @@
       let reconnectionInterval;
       const buzzerButton = document.getElementById("buzzer-button");
 
+      let wakeLock = null;
+
+      // The Wake Lock API needs a secure context (HTTPS or localhost), so it
+      // is unavailable when the server is reached by LAN IP over plain HTTP.
       async function preventSleep() {
+        if (!("wakeLock" in navigator)) {
+          return;
+        }
         try {
-          const wakeLock = await navigator.wakeLock.request("screen");
+          wakeLock = await navigator.wakeLock.request("screen");
           console.log("Wake lock is active");
-          document.addEventListener("visibilitychange", async () => {
-            if (document.visibilityState === "visible") {
-              try {
-                await wakeLock.release();
-                await navigator.wakeLock.request("screen");
-                console.log("Wake lock re-acquired");
-              } catch (err) {
-                console.error(`Error re-acquiring wake lock: ${err}`);
-              }
-            }
-          });
         } catch (err) {
           console.error(`Error acquiring wake lock: ${err}`);
         }
       }
+
+      // The browser releases the lock whenever the page is hidden.
+      document.addEventListener("visibilitychange", () => {
+        if (
+          document.visibilityState === "visible" &&
+          (!wakeLock || wakeLock.released)
+        ) {
+          preventSleep();
+        }
+      });
 
       preventSleep();
 
