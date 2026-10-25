@@ -331,6 +331,8 @@ io.on("connection", (socket) => {
     }
   });
 
+  // Main screen and admin sockets aren't teams, so only act when a team's
+  // socket disconnects.
   socket.on("disconnect", () => {
     for (const [pin, team] of registeredUsers.entries()) {
       if (team.socketId === socket.id) {
@@ -338,11 +340,11 @@ io.on("connection", (socket) => {
           registeredUsers.delete(pin);
         }
         team.socketId = null;
+        saveState();
+        broadcastUsers();
         break;
       }
     }
-    saveState();
-    broadcastUsers();
   });
 });
 
