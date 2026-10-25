@@ -25,6 +25,8 @@
 
       buzzerSound.volume = primaryNotificationVolume;
       subsequentBuzzerSound.volume = secondaryNotificationVolume;
+      // Number of presses already rendered, so each new press sounds once.
+      let knownPressCount = 0;
 
       function formatDate(date) {
         const hours = date.getHours();
@@ -44,7 +46,7 @@
 
       function updatePresses(presses) {
         pressesListElement.innerHTML = "";
-        presses.forEach((press, index) => {
+        presses.forEach((press) => {
           const pressItem = document.createElement("div");
           pressItem.className = "pressItem";
           const date = new Date(press.timestamp);
@@ -55,13 +57,15 @@
           timestampElement.textContent = formatDate(date);
           pressItem.append(teamNameElement, timestampElement);
           pressesListElement.appendChild(pressItem);
-
-          if (index > 0) {
-            const audio = subsequentBuzzerSound.cloneNode(true);
-            audio.volume = secondaryNotificationVolume;
-            audio.play();
-          }
         });
+
+        // The first press has its own sound in buzzerPressed().
+        if (presses.length > knownPressCount && presses.length > 1) {
+          const audio = subsequentBuzzerSound.cloneNode(true);
+          audio.volume = secondaryNotificationVolume;
+          audio.play();
+        }
+        knownPressCount = presses.length;
       }
 
       function buzzerPressed({ teamName, description }) {
@@ -81,6 +85,7 @@
       socket.on("reset", () => {
         resultElement.textContent = "Waiting for buzzer press...";
         pressesListElement.innerHTML = "";
+        knownPressCount = 0;
       });
 
       function speak(text) {
