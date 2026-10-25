@@ -236,14 +236,14 @@
           });
       }
 
-      function nameChangeAction(oldName, newName, action) {
+      function nameChangeAction(oldName, newName, approve) {
         fetch("/admin/approveNameChange", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
             Authorization: authHeader,
           },
-          body: JSON.stringify({ oldName, newName, approve: false }),
+          body: JSON.stringify({ oldName, newName, approve }),
         })
           .then((response) => response.json())
           .then((data) => {
