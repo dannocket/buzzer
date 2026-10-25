@@ -347,10 +347,12 @@ io.on("connection", (socket) => {
 });
 
 const port = process.env.PORT || 3000;
-http.listen(port, () => {
-  console.log(`Server running on port ${port}`);
-  if (!process.env.ADMIN_PASSWORD) {
-    console.log(`Admin password (set ADMIN_PASSWORD to choose one): ${adminPassword}`);
-  }
-  loadState();
+// Load saved state first so early clients don't see an empty game.
+loadState().then(() => {
+  http.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+    if (!process.env.ADMIN_PASSWORD) {
+      console.log(`Admin password (set ADMIN_PASSWORD to choose one): ${adminPassword}`);
+    }
+  });
 });
