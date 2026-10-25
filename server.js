@@ -7,8 +7,10 @@ const { warn } = require("console");
 const fs = require("fs").promises;
 const path = require("path");
 
+const publicDir = path.join(__dirname, "public");
+
 app.use(express.json());
-app.use(express.static("public"));
+app.use(express.static(publicDir));
 
 const registeredUsers = new Map();
 const buzzerPresses = [];
@@ -134,15 +136,15 @@ async function loadState() {
 }
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/user.html");
+  res.sendFile(path.join(publicDir, "user.html"));
 });
 
 app.get("/main", (req, res) => {
-  res.sendFile(__dirname + "/public/main.html");
+  res.sendFile(path.join(publicDir, "main.html"));
 });
 
 app.get("/admin", (req, res) => {
-  res.sendFile(__dirname + "/public/admin.html");
+  res.sendFile(path.join(publicDir, "admin.html"));
 });
 
 app.get("/history", (req, res) => {
