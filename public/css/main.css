@@ -69,13 +69,6 @@ body.page-main {
     font-size: 2rem;
     text-align: center;
   }
-  #history-icon {
-    position: absolute;
-    top: 20px;
-    right: 20px;
-    font-size: 1rem;
-    cursor: pointer;
-  }
   #pressesList {
     width: max-content;
     max-height: 80vh;
@@ -127,8 +120,7 @@ body.page-admin {
   #adminPanel {
     display: none;
   }
-  #usersList,
-  #resetSection {
+  #usersList {
     margin-top: 20px;
     width: 100%;
   }
@@ -139,29 +131,6 @@ body.page-admin {
   }
   .userItem > span {
     padding: 3px 10px 3px 0;
-  }
-  .pending-name-change {
-    color: orange;
-  }
-  .tabs {
-    display: flex;
-    justify-content: space-around;
-    margin-bottom: 20px;
-  }
-  .tab {
-    cursor: pointer;
-    padding: 10px 20px;
-    border: 1px solid #ccc;
-    border-bottom: none;
-    background-color: #f9f9f9;
-    width: 100%;
-  }
-  .active-tab {
-    background-color: #fff;
-    font-weight: bold;
-  }
-  .active-content {
-    display: block;
   }
   .teamDescription {
     margin-left: 10px;

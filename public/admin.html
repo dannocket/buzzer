@@ -24,7 +24,7 @@
       <h2>Admin Panel</h2>
 
       <!-- Content for managing users -->
-      <div id="manageContent" class="tab-content active-content">
+      <div id="manageContent">
         <h3>Manage Users</h3>
         <div id="usersList"></div>
       </div>
@@ -32,7 +32,7 @@
       <hr />
 
       <!-- Content for resetting buzzer -->
-      <div id="resetContent" class="tab-content">
+      <div id="resetContent">
         <h3>Reset Buzzer</h3>
         <button id="resetButton">Reset Buzzer</button>
       </div>
@@ -44,23 +44,9 @@
       const loginForm = document.getElementById("loginForm");
       const adminPanel = document.getElementById("adminPanel");
       const passwordInput = document.getElementById("passwordInput");
-      const loginButton = document.getElementById("loginButton");
       const resetButton = document.getElementById("resetButton");
       const usersList = document.getElementById("usersList");
-      const manageContent = document.getElementById("manageContent");
-      const resetContent = document.getElementById("resetContent");
       let authHeader = "";
-
-      function switchTab(tab, content) {
-        document
-          .querySelectorAll(".tab")
-          .forEach((t) => t.classList.remove("active-tab"));
-        document
-          .querySelectorAll(".tab-content")
-          .forEach((c) => c.classList.remove("active-content"));
-        tab.classList.add("active-tab");
-        content.classList.add("active-content");
-      }
 
       document
         .getElementById("admin-login-form")
@@ -262,14 +248,6 @@
 
       socket.on("updateUsers", (users) => {
         updateUsersList(users);
-      });
-
-      socket.on("nameChangeRequest", ({ oldName, newName }) => {
-        fetchUsers();
-      });
-
-      socket.on("nameChangeApproved", ({ oldName, newName }) => {
-        fetchUsers();
       });
     </script>
   </body>
