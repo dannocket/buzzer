@@ -47,3 +47,26 @@ If it isn't set, the server generates a random password on each start and prints
 - Distribute the WiFi network name, and server url as QR code for easy client setup.
 - Place the mobile phone in **Do not disturb** (DND) mode, to prevent calls during competition.
 - Ensure that mobile phone screen has the longest timeout to prevent the screen from locking during competition. The app asks the browser to keep the screen awake, but browsers only allow that over HTTPS or on localhost, so it won't work over a plain-HTTP LAN address.
+
+## Testing
+
+The test tooling needs Node 22.12 or later.
+
+Server tests use [Vitest](https://vitest.dev). Each test starts its own server on a random port with a temporary state file, so your `appState.json` is never touched.
+
+```
+npm test               # run once
+npm run test:watch     # re-run on change
+npm run test:coverage  # with a coverage report in coverage/
+```
+
+End-to-end tests use [Playwright](https://playwright.dev) to drive the user, admin and main screens in Chromium. Install the browser once, then run them:
+
+```
+npx playwright install chromium
+npm run test:e2e
+```
+
+Playwright starts the server on port 3100 with the admin password `e2e-pass` and a fresh state file for each run, so port 3100 must be free.
+
+The `STATE_FILE` environment variable sets where the server keeps its state, which is `appState.json` by default.
