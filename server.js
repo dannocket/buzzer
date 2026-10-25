@@ -124,7 +124,7 @@ app.get("/history", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const { teamName, socketId } = req.body;
+  const { teamName, socketId } = req.body ?? {};
 
   const team = getTeamByName(teamName);
 
@@ -140,7 +140,7 @@ app.post("/register", (req, res) => {
 });
 
 app.post("/reRegister", (req, res) => {
-  const { pin, socketId } = req.body;
+  const { pin, socketId } = req.body ?? {};
   const team = registeredUsers.get(pin);
   if (team && team.approved) {
     team.socketId = socketId;
@@ -163,7 +163,7 @@ app.post("/reRegister", (req, res) => {
 });
 
 app.post("/changeTeamName", (req, res) => {
-  const { oldName, newName, pin } = req.body;
+  const { oldName, newName, pin } = req.body ?? {};
   const team = registeredUsers.get(pin);
 
   if (team && team.teamName === oldName) {
@@ -191,7 +191,7 @@ app.get("/admin/users", checkAuth, (req, res) => {
 });
 
 app.post("/admin/approve", checkAuth, (req, res) => {
-  const { teamName, approve } = req.body;
+  const { teamName, approve } = req.body ?? {};
   const team = getTeamByName(teamName);
   if (team) {
     team.approved = approve;
@@ -208,7 +208,7 @@ app.post("/admin/approve", checkAuth, (req, res) => {
 });
 
 app.post("/admin/approveNameChange", checkAuth, (req, res) => {
-  const { oldName, newName, approve } = req.body;
+  const { oldName, newName, approve } = req.body ?? {};
   const team = getTeamByName(oldName);
   if (team && team.pendingNameChange === newName) {
     if (approve) {
@@ -225,7 +225,7 @@ app.post("/admin/approveNameChange", checkAuth, (req, res) => {
 });
 
 app.post("/admin/editUser", checkAuth, (req, res) => {
-  const { oldName, newName, description } = req.body;
+  const { oldName, newName, description } = req.body ?? {};
   const team = getTeamByName(oldName);
   if (team) {
     if (getTeamByName(newName) && newName !== oldName) {
@@ -245,7 +245,7 @@ app.post("/admin/editUser", checkAuth, (req, res) => {
 });
 
 app.post("/admin/removeUser", checkAuth, (req, res) => {
-  const { teamName } = req.body;
+  const { teamName } = req.body ?? {};
   const pin = Array.from(registeredUsers.entries()).find(
     ([k, v]) => v.teamName === teamName
   )[0];
