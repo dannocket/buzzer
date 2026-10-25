@@ -281,7 +281,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("buzzerPress", (data) => {
-    const { pin } = data;
+    const { pin } = data ?? {};
     const team = registeredUsers.get(pin);
 
     if (team && team.socketId === socket.id) {
