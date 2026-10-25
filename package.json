@@ -6,8 +6,11 @@
     "node": ">=20"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node server.js"
+    "start": "node server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +19,12 @@
     "express": "^5.3.0",
     "socket.io": "^4.8.4"
   },
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@vitest/coverage-v8": "^5.0.5",
+    "socket.io-client": "^4.8.4",
+    "supertest": "^7.3.1",
+    "vitest": "^5.0.5"
+  }
 }
